@@ -58,27 +58,36 @@ function AI:updateLink()
 		local idx=0;
 		
 		for pi, pv in ipairs(self.players) do
-			local tp=1/PointDist(pv.locx, pv.locy, rv.locx, rv.locy);
+			local tp=1;
+			if pv.ball~=nil then
+				tp=tp*(3/PointDist(pv.locx, pv.locy, 15/2, 1.57));
+				if pv.role==rv.rolve then
+					tp=tp*1.5;
+				end
+			else
+				tp=tp*(1/PointDist(pv.locx, pv.locy, rv.locx, rv.locy));
+				if pv.role==rv.rolve then
+					tp=tp*2;
+				end
+			end
+			
 			if pv.role==rv.rolve then
 				tp=tp*1.5;
 			end
-			if pv.ball~=nil then
-				tp=tp*2;
-			end
+			
 			if tp>p then
 				idx = pi;
 				p = tp;
 			end
 		end
 		if self.ball.player==nil then
-			local tp=3/PointDist(self.ball.locx, self.ball.locy, 
+			local tp=2/PointDist(self.ball.locx, self.ball.locy, 
 								rv.locx, rv.locy);
 			if tp>p then
 				idx = 0;
 				p = tp;
 			end
 		end	
-		
 		self.link[ri] = idx;
 	end
 end

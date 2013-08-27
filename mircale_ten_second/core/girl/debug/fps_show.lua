@@ -22,55 +22,56 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ----------------------------------------------------------------
 -- write by xerysherry
 
-local tinsert = table.insert;
+-- 显示参数
+local _show = true;
+local _font = nil;
+local _font_color = {255,255,255};
+local _font_x = 0;
+local _font_y = 0;
 
--- 得到基类
-local Object = getClass("Object");
-local Timer = getClass("Object.Timer");
-
--- 空闲任务调度类
-local Idle = class("Idle", Object,
-{
-	task = nil,
-	timer = nil,
-});
-
-function Idle:initialize(delay_time)
-	self.task = {};
-	
-	self.timer = Timer();
-	self.timer:reset(delay_time);
-	self.timer.onTimer = function ()
-		for i, func in pairs(self.task) do
-			if func() then
-				self.task[i]=nil;
+-- FPS 显示
+if type(getDebuger) == "function" then
+	getDebuger():setCustomDraw("_fps_show_draw", 
+	function ()
+		if _show then
+			local prev_font = nil;
+			if _font then
+				prev_font = love.graphics.getFont();
+				love.graphics.setFont(_font);
+			end
+			local font_x = _font_x;
+			local font_y = _font_y;
+			if font_x < 0 then
+				font_x = love.graphics.getWidth() + font_x;
+			end
+			if font_y < 0 then
+				font_y = love.graphics.getHeight() + font_y;
+			end
+			
+			love.graphics.setColor(_font_color);
+			love.graphics.print("FPS :"..love.timer.getFPS(), 
+								font_x, font_y);
+								
+			if prev_font then
+				love.graphics.setFont(prev_font);
 			end
 		end
-	end
-	self.timer:start();
+	end)
 end
 
--- 添加任务函数，返回true表示任务完成，会被移除
-function Idle:addTask(idx_or_func, func)
-	if func==nil then
-		if type(idx_or_func)~="function" then
-			return;
-		end
-		tinsert(self.task, idx_or_func);
-	else
-		if type(func)~="function" then
-			return;
-		end
-		self.task[idx_or_func] = func;
-	end
+function fpsShow(value)
+	_show = value;
 end
 
-function Idle:clearTask(idx)
-	self.task[idx] = nil;
+function fpsSetFont(font)
+	_font = font;
 end
 
-function Idle:tic(dt)
-	self.timer:tic(dt);
+function fpsSetColor(color)
+	_font_color = color;
 end
 
-return Idle;
+function fpsSetLoc(x, y)
+	_font_x = x or 0;
+	_font_y = y or 0;
+end
